@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>New Year Proposal</title>
+<style>
+html, body { margin:0; padding:0; height:100%; font-family:'Comic Sans MS', cursive; overflow:hidden; }
+.hidden { display:none; }
+button { padding:12px 24px; font-size:18px; border:none; border-radius:10px; background:#ff99cc; color:white; margin-top:20px; }
+textarea { width:80%; height:120px; font-size:16px; border-radius:10px; border:2px solid #ff99cc; padding:10px; resize:none; }
+h1,h2 { text-align:center; color:#ff0066; margin:10px 0; }
+
+/* Lock Screen */
+#lockScreen { width:100%; height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; color:white; text-shadow:2px 2px 5px #000; background:url('https://i.ibb.co/3v0VYbM/hello-kitty.png') center/cover no-repeat; }
+
+/* Safe Message */
+#safeMessage, #countdown, #happyNewYear, .questionPage, #resultPage, #proposalPage { width:100%; height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; }
+#safeMessage { background:#ffe6f0; font-size:28px; color:#ff3399; }
+#countdown { font-size:60px; color:#ff3399; background:#ffe6f0; position:relative; }
+#happyNewYear { background:#ffccf2; position:relative; }
+canvas { position:absolute; top:0; left:0; z-index:0; width:100%; height:100%; }
+#happyText { position:relative; z-index:2; font-size:36px; color:#ff0066; }
+.questionPage { background:#ffe6f0; justify-content:flex-start; padding-top:60px; }
+#resultPage { background:#fff0f5; overflow-y:auto; }
+#resultPage div { margin:10px; padding:10px; border-radius:10px; background:#ffe6f0; width:80%; word-wrap:break-word; }
+#proposalPage { background:#ffccf2; font-size:36px; color:#ff0066; position:relative; }
+
+.kitty { position:absolute; width:50px; height:50px; pointer-events:none; animation:float 10s linear infinite; }
+@keyframes float { 0%{ transform: translateY(100vh) translateX(0);} 100%{transform:translateY(-50px) translateX(500px);}}
+</style>
+</head>
+<body>
+
+<!-- Lock Screen -->
+<div id="lockScreen">
+<h1>Hello Kitty Lock</h1>
+<input type="text" id="passwordInput" placeholder="Enter password">
+<button onclick="checkPassword()">Unlock</button>
+<p>Hint: When we started our relationship?</p>
+<p id="lockMsg" style="color:yellow;"></p>
+</div>
+
+<!-- Safe Message -->
+<div id="safeMessage" class="hidden">
+<h1>You are safe! 🎉</h1>
+</div>
+
+<!-- Countdown -->
+<div id="countdown" class="hidden">
+<h1 id="countdownNumber">10</h1>
+</div>
+
+<!-- Happy New Year -->
+<div id="happyNewYear" class="hidden">
+<canvas id="fireworksCanvas"></canvas>
+<div id="happyText">🎉 Happy New Year! 🎉</div>
+</div>
+
+<!-- Questions -->
+<div id="question1" class="questionPage hidden">
+<h2>Question 1: What do you love most about us?</h2>
+<textarea id="answer1"></textarea>
+<button onclick="nextQuestion(1)">Next</button>
+</div>
+<div id="question2" class="questionPage hidden">
+<h2>Question 2: Describe our happiest memory together.</h2>
+<textarea id="answer2"></textarea>
+<button onclick="nextQuestion(2)">Next</button>
+</div>
+<div id="question3" class="questionPage hidden">
+<h2>Question 3: How do you imagine our future together?</h2>
+<textarea id="answer3"></textarea>
+<button onclick="nextQuestion(3)">Next</button>
+</div>
+<div id="question4" class="questionPage hidden">
+<h2>Question 4: Write a message to me from your heart.</h2>
+<textarea id="answer4"></textarea>
+<button onclick="nextQuestion(4)">Next</button>
+</div>
+
+<!-- Result Page -->
+<div id="resultPage" class="hidden">
+<h1>Your Answers</h1>
+<div><strong>Question 1:</strong> <span id="res1"></span></div>
+<div><strong>Question 2:</strong> <span id="res2"></span></div>
+<div><strong>Question 3:</strong> <span id="res3"></span></div>
+<div><strong>Question 4:</strong> <span id="res4"></span></div>
+</div>
+
+<!-- Proposal -->
+<div id="proposalPage" class="hidden">
+<h1>Will u marry me? 💖</h1>
+</div>
+
+<!-- Audio -->
+<audio id="bgMusic" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" loop autoplay></audio>
+<audio id="fireworkSound" src="https://www.soundjay.com/explosion/sounds/explosion-01.mp3"></audio>
+<audio id="kissSound" src="https://www.soundjay.com/human/sounds/kiss-1.mp3"></audio>
+
+<script>
+/* Floating Kitty */
+function createKitty(){
+  let k=document.createElement('img');
+  k.src='https://i.ibb.co/3v0VYbM/hello-kitty.png';
+  k.className='kitty';
+  k.style.left=Math.random()*window.innerWidth+'px';
+  k.style.animationDuration=(5+Math.random()*5)+'s';
+  document.body.appendChild(k);
+  setTimeout(()=>k.remove(),10000);
+}
+setInterval(createKitty,500);
+
+/* Password */
+function checkPassword(){
+  let p=document.getElementById('passwordInput').value.trim().toLowerCase();
+  let msg=document.getElementById('lockMsg');
+  if(p==='may 17'||p==='17 may'){
+    document.getElementById('lockScreen').classList.add('hidden');
+    document.getElementById('safeMessage').classList.remove('hidden');
+    setTimeout(()=>startCountdownInterface(),1500);
+  } else msg.textContent='Wrong password! Try again 😘';
+}
+
+/* Countdown */
+function startCountdownInterface(){
+  document.getElementById('safeMessage').classList.add('hidden');
+  document.getElementById('countdown').classList.remove('hidden');
+  let count=5;
+  let n=document.getElementById('countdownNumber');
+  let interval=setInterval(()=>{
+    n.textContent=count;
+    count--;
+    if(count<0){ clearInterval(interval); document.getElementById('countdown').classList.add('hidden'); showHappyNewYear();}
+  },1000);
+}
+
+/* Big Fireworks */
+function showHappyNewYear(){
+  const page=document.getElementById('happyNewYear');
+  page.classList.remove('hidden');
+  const canvas=document.getElementById('fireworksCanvas');
+  const ctx=canvas.getContext('2d');
+  canvas.width=window.innerWidth;
+  canvas.height=window.innerHeight;
+  let fireworks=[],particles=[];
+  
+  function Firework(){ this.x=canvas.width/2; this.y=canvas.height; this.tx=Math.random()*canvas.width; this.ty=Math.random()*canvas.height/2; this.color='hsl('+Math.random()*360+',100%,50%)'; }
+  Firework.prototype.update=function(){ this.x+=(this.tx-this.x)*0.05; this.y+=(this.ty-this.y)*0.05; if(Math.abs(this.x-this.tx)<2 && Math.abs(this.y-this.ty)<2){ explode(this.x,this.y,this.color); this.x=canvas.width/2; this.y=canvas.height; this.tx=Math.random()*canvas.width; this.ty=Math.random()*canvas.height/2; document.getElementById('fireworkSound').currentTime=0; document.getElementById('fireworkSound').play(); } }
+  Firework.prototype.draw=function(){ ctx.beginPath(); ctx.arc(this.x,this.y,5,0,Math.PI*2); ctx.fillStyle=this.color; ctx.fill(); }
+
+  function Particle(x,y,color){ this.x=x; this.y=y; this.vx=(Math.random()-0.5)*10; this.vy=(Math.random()-0.5)*10; this.alpha=1; this.color=color; }
+  Particle.prototype.update=function(){ this.x+=this.vx; this.y+=this.vy; this.alpha-=0.02; }
+  Particle.prototype.draw=function(){ ctx.globalAlpha=this.alpha; ctx.beginPath(); ctx.arc(this.x,this.y,3,0,Math.PI*2); ctx.fillStyle=this.color; ctx.fill(); ctx.globalAlpha=1; }
+
+  function explode(x,y,color){ for(let i=0;i<50;i++) particles.push(new Particle(x,y,color)); }
+
+  for(let i=0;i<7;i++) fireworks.push(new Firework());
+
+  function animate(){
+    ctx.fillStyle='rgba(255,230,240,0.2)';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    fireworks.forEach(f=>{ f.update(); f.draw(); });
+    particles.forEach((p,i)=>{ p.update(); p.draw(); if(p.alpha<=0) particles.splice(i,1); });
+    requestAnimationFrame(animate);
+  }
+  animate();
+
+  setTimeout(()=>{
+    page.classList.add('hidden'); showQuestion(1);
+  },8000);
+}
+
+/* Questions */
+let answers={};
+function showQuestion(n){ document.getElementById('question'+n).classList.remove('hidden'); }
+function nextQuestion(n){
+  let val=document.getElementById('answer'+n).value.trim();
+  if(val.split('.').filter(s=>s.trim()!=='').length<3){ alert('Write at least 3 sentences!'); return; }
+  answers['res'+n]=val;
+  document.getElementById('question'+n).classList.add('hidden');
+  if(n<4) showQuestion(n+1); else showResults();
+}
+
+/* Results */
+function showResults(){
+  document.getElementById('resultPage').classList.remove('hidden');
+  for(let i=1;i<=4;i++) document.getElementById('res'+i).textContent=answers['res'+i];
+  setTimeout(()=>showProposal(),2500);
+}
+
+/* Proposal */
+function showProposal(){
+  document.getElementById('resultPage').classList.add('hidden');
+  document.getElementById('proposalPage').classList.remove('hidden');
+  document.getElementById('kissSound').play();
+}
+</script>
+</body>
+</html>
